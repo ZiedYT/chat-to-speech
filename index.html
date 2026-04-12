@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Twitch Chat to Speech</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Starting Page -->
+    <div id="startingPage" class="page active">
+        <div class="container start-container">
+            <h1>Twitch Chat to Speech</h1>
+            <p>Convert Twitch chat messages to speech in real-time</p>
+            <button id="settingsBtn" class="btn btn-primary">Get Started</button>
+            <p class="info-text">Click to configure your Twitch credentials</p>
+        </div>
+    </div>
+
+    <!-- Credentials Page -->
+    <div id="credentialsPage" class="page">
+        <div class="container creds-container">
+            <div class="modal">
+                <h2>Twitch Chat to Speech Configuration</h2>
+                
+                <div class="form-group">
+                    <label for="channelInput">Twitch Channel Name:</label>
+                    <input type="text" id="channelInput" placeholder="e.g., your_channel_name" />
+                </div>
+
+                <div class="form-group">
+                    <label>Get OAuth Token:</label>
+                    <p class="instruction">Click the button below to open Twitch OAuth, allow permissions, and copy the token.</p>
+                    <button id="authBtn" class="btn btn-secondary">Click Here to Get Token</button>
+                </div>
+
+                <div class="form-group">
+                    <label for="tokenInput">Paste OAuth Token Here:</label>
+                    <input type="password" id="tokenInput" placeholder="oauth:..." />
+                    <button id="toggleTokenBtn" class="btn-toggle">Show</button>
+                </div>
+
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="readUsernameCheckbox" />
+                        Read username before each message
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label for="volumeSlider">Volume:</label>
+                    <input type="range" id="volumeSlider" min="0" max="1" step="0.1" value="1" />
+                    <span id="volumeLabel">100%</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="rateSlider">Speech Rate:</label>
+                    <input type="range" id="rateSlider" min="0.5" max="2" step="0.1" value="1" />
+                    <span id="rateLabel">Normal</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="voiceSelect">TTS Voice:</label>
+                    <select id="voiceSelect">
+                        <option value="">Loading voices...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <button id="connectBtn" class="btn btn-primary">Connect to Chat</button>
+                    <button id="backBtn" class="btn btn-secondary">Back</button>
+                </div>
+
+                <div id="statusMessage" class="status-message"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Listener Page -->
+    <div id="chatPage" class="page">
+        <div class="container chat-container">
+            <div class="header">
+                <h2>Listening to Chat</h2>
+                <button id="settingsBtn2" class="btn btn-secondary">Settings</button>
+            </div>
+
+            <div class="chat-info">
+                <p id="channelInfo"></p>
+                <p id="connectionStatus" class="status">Connecting...</p>
+            </div>
+
+            <div class="chat-messages" id="chatMessages"></div>
+
+            <div class="controls">
+                <button id="stopBtn" class="btn btn-danger">Stop Listening</button>
+                <button id="pauseBtn" class="btn btn-secondary">Pause</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
