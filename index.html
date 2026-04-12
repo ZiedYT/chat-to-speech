@@ -48,6 +48,18 @@
                 </div>
 
                 <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="onlyReadCommandCheckbox" />
+                        Only read messages that start with command
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label for="commandStartInput">Command:</label>
+                    <input type="text" id="commandStartInput" placeholder="e.g., !say" />
+                </div>
+
+                <div class="form-group">
                     <label for="volumeSlider">Volume:</label>
                     <input type="range" id="volumeSlider" min="0" max="1" step="0.1" value="1" />
                     <span id="volumeLabel">100%</span>

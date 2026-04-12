@@ -8,6 +8,8 @@ const state = {
     token: localStorage.getItem('twitchToken') || '',
     channel: localStorage.getItem('twitchChannel') || '',
     readUsername: localStorage.getItem('readUsername') === 'true',
+    onlyReadCommand: localStorage.getItem('onlyReadCommand') === 'true',
+    commandStart: localStorage.getItem('commandStart') || '!tts',
     volume: parseFloat(localStorage.getItem('speechVolume')) || 1.0,
     rate: parseFloat(localStorage.getItem('speechRate')) || 1.0,
     voiceIndex: parseInt(localStorage.getItem('voiceIndex')) || 0,
@@ -107,12 +109,16 @@ async function connectToTwitchChat() {
     state.channel = channel.toLowerCase();
     state.token = token;
     state.readUsername = document.getElementById('readUsernameCheckbox').checked;
+    state.onlyReadCommand = document.getElementById('onlyReadCommandCheckbox').checked;
+    state.commandStart = document.getElementById('commandStartInput').value.trim();
     state.voiceIndex = parseInt(document.getElementById('voiceSelect').value);
 
     // Save all settings to localStorage
     localStorage.setItem('twitchToken', state.token);
     localStorage.setItem('twitchChannel', state.channel);
     localStorage.setItem('readUsername', state.readUsername);
+    localStorage.setItem('onlyReadCommand', state.onlyReadCommand);
+    localStorage.setItem('commandStart', state.commandStart);
     localStorage.setItem('speechVolume', state.volume);
     localStorage.setItem('speechRate', state.rate);
     localStorage.setItem('voiceIndex', state.voiceIndex);
@@ -157,7 +163,19 @@ function connectViaTwitchIRC() {
 
         if (match) {
             const username = match[1];
-            const text = match[2];
+            let text = match[2];
+
+            if (state.onlyReadCommand) {
+                const prefix = (state.commandStart || '').trim();
+                if (!prefix || !text.startsWith(prefix)) {
+                    return;
+                }
+
+                text = text.slice(prefix.length).trim();
+                if (!text) {
+                    return;
+                }
+            }
 
             console.log(`${username}: ${text}`);
             speakMessage(username, text);
@@ -233,6 +251,8 @@ function loadSettings() {
     document.getElementById('channelInput').value = state.channel;
     document.getElementById('tokenInput').value = state.token;
     document.getElementById('readUsernameCheckbox').checked = state.readUsername;
+    document.getElementById('onlyReadCommandCheckbox').checked = state.onlyReadCommand;
+    document.getElementById('commandStartInput').value = state.commandStart;
     document.getElementById('volumeSlider').value = state.volume;
     document.getElementById('rateSlider').value = state.rate;
     document.getElementById('voiceSelect').value = state.voiceIndex;
@@ -311,6 +331,16 @@ document.getElementById('channelInput').addEventListener('change', () => {
 document.getElementById('readUsernameCheckbox').addEventListener('change', (e) => {
     state.readUsername = e.target.checked;
     localStorage.setItem('readUsername', state.readUsername);
+});
+
+document.getElementById('onlyReadCommandCheckbox').addEventListener('change', (e) => {
+    state.onlyReadCommand = e.target.checked;
+    localStorage.setItem('onlyReadCommand', state.onlyReadCommand);
+});
+
+document.getElementById('commandStartInput').addEventListener('change', (e) => {
+    state.commandStart = e.target.value.trim();
+    localStorage.setItem('commandStart', state.commandStart);
 });
 
 document.getElementById('volumeSlider').addEventListener('input', (e) => {
