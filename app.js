@@ -10,6 +10,8 @@ const state = {
     readUsername: localStorage.getItem('readUsername') === 'true',
     onlyReadCommand: localStorage.getItem('onlyReadCommand') === 'true',
     commandStart: localStorage.getItem('commandStart') || '!tts',
+    limitChars: localStorage.getItem('limitChars') === 'true',
+    charLimit: parseInt(localStorage.getItem('charLimit')) || 200,
     volume: parseFloat(localStorage.getItem('speechVolume')) || 1.0,
     rate: parseFloat(localStorage.getItem('speechRate')) || 1.0,
     voiceIndex: parseInt(localStorage.getItem('voiceIndex')) || 0,
@@ -50,6 +52,13 @@ function speakMessage(username, message) {
     let fullText = message;
     if (state.readUsername) {
         fullText = `${username} says, ${message}`;
+    }
+
+    if (state.limitChars) {
+        const limit = Math.min(1000, Math.max(5, state.charLimit));
+        if (fullText.length > limit) {
+            fullText = fullText.slice(0, limit);
+        }
     }
 
     const utterance = new SpeechSynthesisUtterance(fullText);
@@ -112,6 +121,8 @@ async function connectToTwitchChat() {
     state.onlyReadCommand = document.getElementById('onlyReadCommandCheckbox').checked;
     state.commandStart = document.getElementById('commandStartInput').value.trim();
     state.voiceIndex = parseInt(document.getElementById('voiceSelect').value);
+    state.limitChars = document.getElementById('limitCharsCheckbox').checked;
+    state.charLimit = Math.min(1000, Math.max(5, parseInt(document.getElementById('charLimitInput').value) || 200));
 
     // Save all settings to localStorage
     localStorage.setItem('twitchToken', state.token);
@@ -119,6 +130,8 @@ async function connectToTwitchChat() {
     localStorage.setItem('readUsername', state.readUsername);
     localStorage.setItem('onlyReadCommand', state.onlyReadCommand);
     localStorage.setItem('commandStart', state.commandStart);
+    localStorage.setItem('limitChars', state.limitChars);
+    localStorage.setItem('charLimit', state.charLimit);
     localStorage.setItem('speechVolume', state.volume);
     localStorage.setItem('speechRate', state.rate);
     localStorage.setItem('voiceIndex', state.voiceIndex);
@@ -253,6 +266,8 @@ function loadSettings() {
     document.getElementById('readUsernameCheckbox').checked = state.readUsername;
     document.getElementById('onlyReadCommandCheckbox').checked = state.onlyReadCommand;
     document.getElementById('commandStartInput').value = state.commandStart;
+    document.getElementById('limitCharsCheckbox').checked = state.limitChars;
+    document.getElementById('charLimitInput').value = state.charLimit;
     document.getElementById('volumeSlider').value = state.volume;
     document.getElementById('rateSlider').value = state.rate;
     document.getElementById('voiceSelect').value = state.voiceIndex;
@@ -341,6 +356,18 @@ document.getElementById('onlyReadCommandCheckbox').addEventListener('change', (e
 document.getElementById('commandStartInput').addEventListener('change', (e) => {
     state.commandStart = e.target.value.trim();
     localStorage.setItem('commandStart', state.commandStart);
+});
+
+document.getElementById('limitCharsCheckbox').addEventListener('change', (e) => {
+    state.limitChars = e.target.checked;
+    localStorage.setItem('limitChars', state.limitChars);
+});
+
+document.getElementById('charLimitInput').addEventListener('change', (e) => {
+    const clamped = Math.min(1000, Math.max(5, parseInt(e.target.value) || 200));
+    e.target.value = clamped;
+    state.charLimit = clamped;
+    localStorage.setItem('charLimit', state.charLimit);
 });
 
 document.getElementById('volumeSlider').addEventListener('input', (e) => {
