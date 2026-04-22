@@ -8,6 +8,7 @@ const state = {
     token: localStorage.getItem('twitchToken') || '',
     channel: localStorage.getItem('twitchChannel') || '',
     readUsername: localStorage.getItem('readUsername') === 'true',
+    replaceLinks: localStorage.getItem('replaceLinks') === 'true',
     onlyReadCommand: localStorage.getItem('onlyReadCommand') === 'true',
     commandStart: localStorage.getItem('commandStart') || '!tts',
     limitChars: localStorage.getItem('limitChars') === 'true',
@@ -42,6 +43,12 @@ function generateAuthUrl() {
     );
 }
 
+function replaceLinksInText(text) {
+    // Match protocol URLs, www URLs, and bare domains like example.com/path.
+    const linkRegex = /https?:\/\/[^\s]+|www\.[^\s]+|\b(?:[a-z0-9-]+\.)+[a-z]{2,}(?:\/[^\s]*)?/gi;
+    return text.replace(linkRegex, 'link');
+}
+
 // ===== TEXT TO SPEECH =====
 function speakMessage(username, message) {
     if (state.isPaused) {
@@ -49,9 +56,14 @@ function speakMessage(username, message) {
         return;
     }
 
-    let fullText = message;
+    let spokenMessage = message;
+    if (state.replaceLinks) {
+        spokenMessage = replaceLinksInText(spokenMessage);
+    }
+
+    let fullText = spokenMessage;
     if (state.readUsername) {
-        fullText = `${username} says, ${message}`;
+        fullText = `${username} says, ${spokenMessage}`;
     }
 
     if (state.limitChars) {
@@ -118,6 +130,7 @@ async function connectToTwitchChat() {
     state.channel = channel.toLowerCase();
     state.token = token;
     state.readUsername = document.getElementById('readUsernameCheckbox').checked;
+    state.replaceLinks = document.getElementById('replaceLinksCheckbox').checked;
     state.onlyReadCommand = document.getElementById('onlyReadCommandCheckbox').checked;
     state.commandStart = document.getElementById('commandStartInput').value.trim();
     state.voiceIndex = parseInt(document.getElementById('voiceSelect').value);
@@ -128,6 +141,7 @@ async function connectToTwitchChat() {
     localStorage.setItem('twitchToken', state.token);
     localStorage.setItem('twitchChannel', state.channel);
     localStorage.setItem('readUsername', state.readUsername);
+    localStorage.setItem('replaceLinks', state.replaceLinks);
     localStorage.setItem('onlyReadCommand', state.onlyReadCommand);
     localStorage.setItem('commandStart', state.commandStart);
     localStorage.setItem('limitChars', state.limitChars);
@@ -264,6 +278,7 @@ function loadSettings() {
     document.getElementById('channelInput').value = state.channel;
     document.getElementById('tokenInput').value = state.token;
     document.getElementById('readUsernameCheckbox').checked = state.readUsername;
+    document.getElementById('replaceLinksCheckbox').checked = state.replaceLinks;
     document.getElementById('onlyReadCommandCheckbox').checked = state.onlyReadCommand;
     document.getElementById('commandStartInput').value = state.commandStart;
     document.getElementById('limitCharsCheckbox').checked = state.limitChars;
@@ -346,6 +361,11 @@ document.getElementById('channelInput').addEventListener('change', () => {
 document.getElementById('readUsernameCheckbox').addEventListener('change', (e) => {
     state.readUsername = e.target.checked;
     localStorage.setItem('readUsername', state.readUsername);
+});
+
+document.getElementById('replaceLinksCheckbox').addEventListener('change', (e) => {
+    state.replaceLinks = e.target.checked;
+    localStorage.setItem('replaceLinks', state.replaceLinks);
 });
 
 document.getElementById('onlyReadCommandCheckbox').addEventListener('change', (e) => {
