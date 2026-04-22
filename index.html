@@ -40,39 +40,36 @@
                     <button id="toggleTokenBtn" class="btn-toggle">Show</button>
                 </div>
 
-                <div class="form-group">
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="readUsernameCheckbox" />
-                        Read username before each message
-                    </label>
+                <div class="form-group" style="display:flex;align-items:center;gap:8px;">
+                    <input type="checkbox" id="readUsernameCheckbox" />
+                    <label for="readUsernameCheckbox" style="margin:0;">Read username before each message</label>
                 </div>
 
-                <div class="form-group">
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="replaceLinksCheckbox" />
-                        Don't read links
-                    </label>
+                <div class="form-group" style="display:flex;align-items:center;gap:8px;">
+                    <input type="checkbox" id="replaceLinksCheckbox" />
+                    <label for="replaceLinksCheckbox" style="margin:0;">Don't read links</label>
                 </div>
 
-                <div class="form-group">
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="onlyReadCommandCheckbox" />
-                        Only read messages that start with command
-                    </label>
+                
+                <div class="form-group" style="display:flex;align-items:center;gap:6px;">
+                    <input type="checkbox" id="slowModeCheckbox" />
+                    <label for="slowModeCheckbox" style="margin:0;">Enable slow mode</label>
+                    <input type="number" id="slowModeSecondsInput" min="1" max="300" value="10" style="width:70px;" />
+                    <span>seconds</span>
                 </div>
-
-                <div class="form-group">
-                    <label for="commandStartInput">Command:</label>
-                    <input type="text" id="commandStartInput" placeholder="e.g., !say" />
-                </div>
-
+                
                 <div class="form-group" style="display:flex;align-items:center;gap:6px;">
                     <input type="checkbox" id="limitCharsCheckbox" />
                     <label for="limitCharsCheckbox" style="margin:0;">Limit TTS to</label>
                     <input type="number" id="charLimitInput" min="5" max="1000" value="200" style="width:70px;" />
                     <span>characters</span>
                 </div>
-
+                <div class="form-group" style="display:flex;align-items:center;gap:8px;">
+                    <input type="checkbox" id="onlyReadCommandCheckbox" />
+                    <label for="onlyReadCommandCheckbox" style="margin:0;">Only messages starting with:</label>
+                    <input type="text" id="commandStartInput" placeholder="e.g., !say" style="width:200px;" />
+                </div>
+                
                 <div class="form-group">
                     <label for="volumeSlider">Volume:</label>
                     <input type="range" id="volumeSlider" min="0" max="1" step="0.1" value="1" />

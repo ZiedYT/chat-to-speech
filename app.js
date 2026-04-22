@@ -11,6 +11,8 @@ const state = {
     replaceLinks: localStorage.getItem('replaceLinks') === 'true',
     onlyReadCommand: localStorage.getItem('onlyReadCommand') === 'true',
     commandStart: localStorage.getItem('commandStart') || '!tts',
+    slowModeEnabled: localStorage.getItem('slowModeEnabled') === 'true',
+    slowModeSeconds: Math.min(300, Math.max(1, parseInt(localStorage.getItem('slowModeSeconds')) || 10)),
     limitChars: localStorage.getItem('limitChars') === 'true',
     charLimit: parseInt(localStorage.getItem('charLimit')) || 200,
     volume: parseFloat(localStorage.getItem('speechVolume')) || 1.0,
@@ -21,6 +23,7 @@ const state = {
     client: null,
     queue: [],
     isSpeaking: false,
+    userLastReadAt: {},
 };
 
 // ===== PAGE NAVIGATION =====
@@ -47,6 +50,25 @@ function replaceLinksInText(text) {
     // Match protocol URLs, www URLs, and bare domains like example.com/path.
     const linkRegex = /https?:\/\/[^\s]+|www\.[^\s]+|\b(?:[a-z0-9-]+\.)+[a-z]{2,}(?:\/[^\s]*)?/gi;
     return text.replace(linkRegex, 'link');
+}
+
+function canReadUserNow(username) {
+    if (!state.slowModeEnabled) {
+        return true;
+    }
+
+    const cooldownMs = Math.min(300, Math.max(1, state.slowModeSeconds)) * 1000;
+    const key = (username || '').toLowerCase();
+    const now = Date.now();
+    const lastRead = state.userLastReadAt[key] || 0;
+
+    if (now - lastRead < cooldownMs) {
+        return false;
+    }
+
+    // Mark accepted message as read/cached now.
+    state.userLastReadAt[key] = now;
+    return true;
 }
 
 // ===== TEXT TO SPEECH =====
@@ -133,6 +155,8 @@ async function connectToTwitchChat() {
     state.replaceLinks = document.getElementById('replaceLinksCheckbox').checked;
     state.onlyReadCommand = document.getElementById('onlyReadCommandCheckbox').checked;
     state.commandStart = document.getElementById('commandStartInput').value.trim();
+    state.slowModeEnabled = document.getElementById('slowModeCheckbox').checked;
+    state.slowModeSeconds = Math.min(300, Math.max(1, parseInt(document.getElementById('slowModeSecondsInput').value) || 10));
     state.voiceIndex = parseInt(document.getElementById('voiceSelect').value);
     state.limitChars = document.getElementById('limitCharsCheckbox').checked;
     state.charLimit = Math.min(1000, Math.max(5, parseInt(document.getElementById('charLimitInput').value) || 200));
@@ -144,6 +168,8 @@ async function connectToTwitchChat() {
     localStorage.setItem('replaceLinks', state.replaceLinks);
     localStorage.setItem('onlyReadCommand', state.onlyReadCommand);
     localStorage.setItem('commandStart', state.commandStart);
+    localStorage.setItem('slowModeEnabled', state.slowModeEnabled);
+    localStorage.setItem('slowModeSeconds', state.slowModeSeconds);
     localStorage.setItem('limitChars', state.limitChars);
     localStorage.setItem('charLimit', state.charLimit);
     localStorage.setItem('speechVolume', state.volume);
@@ -202,6 +228,10 @@ function connectViaTwitchIRC() {
                 if (!text) {
                     return;
                 }
+            }
+
+            if (!canReadUserNow(username)) {
+                return;
             }
 
             console.log(`${username}: ${text}`);
@@ -281,6 +311,8 @@ function loadSettings() {
     document.getElementById('replaceLinksCheckbox').checked = state.replaceLinks;
     document.getElementById('onlyReadCommandCheckbox').checked = state.onlyReadCommand;
     document.getElementById('commandStartInput').value = state.commandStart;
+    document.getElementById('slowModeCheckbox').checked = state.slowModeEnabled;
+    document.getElementById('slowModeSecondsInput').value = state.slowModeSeconds;
     document.getElementById('limitCharsCheckbox').checked = state.limitChars;
     document.getElementById('charLimitInput').value = state.charLimit;
     document.getElementById('volumeSlider').value = state.volume;
@@ -376,6 +408,18 @@ document.getElementById('onlyReadCommandCheckbox').addEventListener('change', (e
 document.getElementById('commandStartInput').addEventListener('change', (e) => {
     state.commandStart = e.target.value.trim();
     localStorage.setItem('commandStart', state.commandStart);
+});
+
+document.getElementById('slowModeCheckbox').addEventListener('change', (e) => {
+    state.slowModeEnabled = e.target.checked;
+    localStorage.setItem('slowModeEnabled', state.slowModeEnabled);
+});
+
+document.getElementById('slowModeSecondsInput').addEventListener('change', (e) => {
+    const clamped = Math.min(300, Math.max(1, parseInt(e.target.value) || 10));
+    e.target.value = clamped;
+    state.slowModeSeconds = clamped;
+    localStorage.setItem('slowModeSeconds', state.slowModeSeconds);
 });
 
 document.getElementById('limitCharsCheckbox').addEventListener('change', (e) => {
